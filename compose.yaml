@@ -1,0 +1,30 @@
+services:
+  # [1] Layanan database
+  postgres:
+    # [2] Gunakan image resmi PostgreSQL versi 17
+    image: postgres:17
+
+    # [3] Ambil konfigurasi dari file .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+    # [4] Hubungkan port lokal 5432 ke port container 5432
+    ports:
+      - "127.0.0.1:5433:5432"
+
+    # [5] Simpan data dalam volume agar bertahan saat container dibuat ulang
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    # [6] Periksa apakah database sudah siap menerima koneksi
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+# [7] Deklarasikan tempat penyimpanan data
+volumes:
+  postgres_data:
