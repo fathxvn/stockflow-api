@@ -1,38 +1,32 @@
-const products = [
-  {
-    id: 1,
-    sku: "BRG-001",
-    name: "Keyboard",
-    price: 150000,
-  },
-  {
-    id: 2,
-    sku: "BRG-002",
-    name: "Mouse",
-    price: 75000,
-  },
-];
+// [1] Gunakan penghubung database yang sudah dibuat
+import { prisma } from "../lib/prisma.js";
 
-let nextProductId =
-  Math.max(0, ...products.map((product) => product.id)) + 1;
+// [2] Ambil daftar produk dari PostgreSQL
+export async function getProducts(req, res) {
+  const products = await prisma.product.findMany({
+    orderBy: { id: "asc" },
+  });
 
-export function getProducts(req, res) {
   return res.status(200).json({
     data: products,
     total: products.length,
   });
 }
 
-export function getProductById(req, res) {
+// [3] Ambil detail produk berdasarkan ID — Identifier
+export async function getProductById(req, res) {
   const id = Number(req.params.id);
 
-  if (!Number.isSafeInteger(id) || id <= 0) {
+  // ID memakai tipe Int PostgreSQL: bilangan bulat 32-bit
+  if (!Number.isSafeInteger(id) || id <= 0 || id > 2147483647) {
     return res.status(400).json({
-      message: "ID produk harus berupa bilangan bulat positif",
+      message: "ID produk harus bilangan bulat positif maksimal 2147483647",
     });
   }
 
-  const product = products.find((item) => item.id === id);
+  const product = await prisma.product.findUnique({
+    where: { id },
+  });
 
   if (!product) {
     return res.status(404).json({
@@ -45,7 +39,8 @@ export function getProductById(req, res) {
   });
 }
 
-export function createProduct(req, res) {
+// [4] Validasi dan simpan produk baru
+export async function createProduct(req, res) {
   const { sku, name, price } = req.body ?? {};
 
   if (typeof sku !== "string" || sku.trim() === "") {
@@ -60,35 +55,40 @@ export function createProduct(req, res) {
     });
   }
 
-  if (!Number.isSafeInteger(price) || price <= 0) {
+  // Harga harus sesuai batas tipe Int di PostgreSQL
+  if (
+    !Number.isSafeInteger(price) ||
+    price <= 0 ||
+    price > 2147483647
+  ) {
     return res.status(400).json({
-      message: "Harga harus berupa bilangan bulat positif",
+      message: "Harga harus bilangan bulat positif maksimal 2147483647",
     });
   }
 
-  const normalizedSku = sku.trim().toUpperCase();
-
-  const skuExists = products.some(
-    (product) => product.sku === normalizedSku
-  );
-
-  if (skuExists) {
-    return res.status(409).json({
-      message: "SKU sudah digunakan",
+  try {
+    // [5] Database membuat ID dan menyimpan produk
+    const product = await prisma.product.create({
+      data: {
+        sku: sku.trim().toUpperCase(),
+        name: name.trim(),
+        price,
+      },
     });
+
+    return res.status(201).json({
+      message: "Produk berhasil ditambahkan",
+      data: product,
+    });
+  } catch (error) {
+    // [6] P2002: nilai melanggar aturan unique, yaitu SKU duplikat
+    if (error.code === "P2002") {
+      return res.status(409).json({
+        message: "SKU sudah digunakan",
+      });
+    }
+
+    // [7] Teruskan error lain ke penanganan error Express
+    throw error;
   }
-
-  const product = {
-    id: nextProductId++,
-    sku: normalizedSku,
-    name: name.trim(),
-    price,
-  };
-
-  products.push(product);
-
-  return res.status(201).json({
-    message: "Produk berhasil ditambahkan",
-    data: product,
-  });
 }

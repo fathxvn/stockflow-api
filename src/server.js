@@ -21,6 +21,17 @@ app.use((req, res) => {
   });
 });
 
+// [1] Tangani error yang diteruskan oleh route/controller
+app.use((error, req, res, next) => {
+  // Detail error untuk debugging di terminal
+  console.error(error);
+
+  // Jangan kirim detail internal database ke client
+  return res.status(500).json({
+    message: "Terjadi kesalahan pada server",
+  });
+});
+
 app.listen(port, () => {
   console.log(`StockFlow berjalan di http://localhost:${port}`);
 });
