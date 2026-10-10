@@ -1,13 +1,26 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
+// [1] Buat Prisma Client untuk aplikasi JavaScript
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
 }
 
+// [2] Tentukan jenis database
 datasource db {
   provider = "postgresql"
+}
+
+// [3] Definisikan struktur produk
+model Product {
+  // ID — Identifier — pengenal unik, dibuat otomatis
+  id        Int      @id @default(autoincrement())
+
+  // SKU — Stock Keeping Unit — kode produk yang tidak boleh duplikat
+  sku       String   @unique
+  name      String
+
+  // Harga dalam rupiah utuh
+  price     Int
+
+  // Waktu pembuatan dan perubahan terakhir
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
