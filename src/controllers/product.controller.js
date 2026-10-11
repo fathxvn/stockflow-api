@@ -92,3 +92,74 @@ export async function createProduct(req, res) {
     throw error;
   }
 }
+
+//edit produk berdasarkan ID 
+export async function updateProduct(req, res) {
+  const id = Number(req.params.id);
+  const { sku, name, price } = req.body ?? {};
+
+  //validasi ID sesui batas tipe int PostgreSQL
+  if (!Number.isSafeInteger(id) || id <= 0 > 2147483647) {
+    return res.status(400).json({
+      message: "ID produk tidak valid",
+    });
+  }
+
+  //validasi SKU -- Stock Keeping Unit -- Kode produk
+  if (typeof sku !== "string" || sku.trim() === ""){
+    return res.status(400).json({
+      message: "SKU wajib diisi berupa teks",
+    });
+  }
+  //validasi nama
+
+  if(typeof name !== "string" || name.trim() === "") {
+    return res.status(400).json({
+      message: "Nama porduk wajib diisi berupa teks",
+    });
+  }
+
+  //validasi harga dalam rupiah utuh
+  if (
+    !Number.isSafeInteger(price) || 
+    price <= 0 || 
+    price >  2147483647
+  ) {
+    return res.status(400).json({
+      message: "harga harus bilangan bulat positif maksimal  2147483647",
+    });
+  }
+
+  try {
+    // cari produk berdasarkan ID dan ubah datanya 
+    const product = await prisma.product.update({
+      where: { id },
+      data: {
+        sku: sku.trim().toUpperCase(),
+        name: name.trim(),
+        price,
+      },
+    });
+
+    //kirim product setelah perubahan 
+    return res.status(400).json({
+      message: "Produk berhasil diubah",
+    });
+  } catch (error) {
+    //product yang ingin diubah tidak di temukan 
+    if(error.code === "P2025") {
+      return res.status(404).json({
+        message: "Produk tidak ditemukan",
+      });
+    }
+    //sku sudah digunakkan oleh produk lain  
+    if(error.code === "P2002") {
+      return res.status(409).json({
+        message: "SKU sudah digunakan",
+      });
+    }
+
+    //teruskan error lain ke handler error
+    throw error;
+  }
+}
