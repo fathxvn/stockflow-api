@@ -163,3 +163,37 @@ export async function updateProduct(req, res) {
     throw error;
   }
 }
+
+// [1] hapus product berdasarkan ID -- identifier
+export async function deleteProduct(req, res) {
+  const id = Number(req.params.id)
+
+
+  // [2] validasi ID sesuai batas tipe int posgresql
+  if (!Number.isSafeInteger(id) || id <= 0 || id > 2147483647) {
+    return res.status(400).json({
+      message: "ID produk tidak valid",
+    });
+  }
+
+  try {
+    // [3] hapus product dari database
+    await prisma.product.delete({
+      where: { id },
+    });
+    
+    // [4] berhasil, status 204 tidak memiliki body responts
+    return res.status(204).end();
+
+  } catch (error) {
+    // [5] product sudah tidak ada atau ID tidak ditemukan
+    if (error.code === "P2025") {
+      return res.status(404).json({
+        message: "Produk Tidak ditemukan",
+      });
+    }
+
+    // [6] teruskan error lain ke handler error
+    throw error;
+  }
+}
