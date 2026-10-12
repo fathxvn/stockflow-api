@@ -54,50 +54,73 @@ export default function ProductForm({ onCreated }) {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2>Tambah Produk</h2>
+        <form onSubmit={handleSubmit} className="space-y-5">
+            {/* [1] Judul formulir */}
+            <h2 className="text-xl font-semibold text-slate-900">
+            Tambah Produk
+            </h2>
 
-      {/* [7] Input terhubung dengan state */}
-      <label>
-        SKU — Stock Keeping Unit — kode produk
-        <input
-          value={sku}
-          onChange={(event) => setSku(event.target.value)}
-          required
-          disabled={saving}
-        />
-      </label>
+            {/* [2] Kolom tersusun vertikal di HP dan sejajar di layar besar */}
+            <div className="grid gap-4 md:grid-cols-3">
+            <label className="block text-sm font-medium text-slate-700">
+                Kode Produk
+                <input
+                value={sku}
+                onChange={(event) => setSku(event.target.value)}
+                required
+                disabled={saving}
+                placeholder="BRG-004"
+                className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-slate-100"
+                />
+            </label>
 
-      <label>
-        Nama produk
-        <input
-          value={name}
-          onChange={(event) => setName(event.target.value)}
-          required
-          disabled={saving}
-        />
-      </label>
+            <label className="block text-sm font-medium text-slate-700">
+                Nama Produk
+                <input
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                required
+                disabled={saving}
+                placeholder="Keyboard Wireless"
+                className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-slate-100"
+                />
+            </label>
 
-      <label>
-        Harga dalam rupiah
-        <input
-          type="number"
-          min="1"
-          max="2147483647"
-          step="1"
-          value={price}
-          onChange={(event) => setPrice(event.target.value)}
-          required
-          disabled={saving}
-        />
-      </label>
+            <label className="block text-sm font-medium text-slate-700">
+                Harga dalam Rupiah
+                <input
+                type="number"
+                min="1"
+                max="2147483647"
+                step="1"
+                value={price}
+                onChange={(event) => setPrice(event.target.value)}
+                required
+                disabled={saving}
+                placeholder="175000"
+                className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-slate-100"
+                />
+            </label>
+            </div>
 
-      {/* [8] Pesan error dan tombol pengiriman */}
-      {error && <p role="alert">{error}</p>}
+            {/* [3] Pesan kegagalan */}
+            {error && (
+            <p
+                role="alert"
+                className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700"
+            >
+                {error}
+            </p>
+            )}
 
-      <button type="submit" disabled={saving}>
-        {saving ? "Menyimpan..." : "Simpan Produk"}
-      </button>
-    </form>
-  );
+            {/* [4] Tombol pengiriman */}
+            <button
+            type="submit"
+            disabled={saving}
+            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+            {saving ? "Menyimpan..." : "Simpan Produk"}
+            </button>
+        </form>
+    );
 }

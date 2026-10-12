@@ -54,16 +54,34 @@ export default function App() {
   if (error) return <p role="alert">{error}</p>;
 
   // [8] Tampilkan data dari database
-  return (
-    <main>
-      <h1>StockFlow</h1>
+// [8] Layout halaman dengan Tailwind
+return (
+    <main className="mx-auto max-w-5xl space-y-8 px-4 py-10">
+      {/* [9] Judul halaman */}
+      <header>
+        <h1 className="text-3xl font-bold text-slate-900">
+          StockFlow
+        </h1>
+        <p className="mt-2 text-slate-600">
+          Kelola data produk gudang.
+        </p>
+      </header>
 
-      <ProductForm onCreated={handleProductCreated} />
+      {/* [10] Panel formulir */}
+      <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <ProductForm onCreated={handleProductCreated} />
+      </section>
 
-      <h2>Daftar Produk</h2>
+      {/* [11] Panel daftar produk */}
+      <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="mb-4 text-xl font-semibold">
+          Daftar Produk
+        </h2>
 
-      {/* [9] Kirim state products ke komponen tabel */}
-      <TableProduct products={products} />
+        <div className="overflow-x-auto">
+          <TableProduct products={products} />
+        </div>
+      </section>
     </main>
   );
 }
