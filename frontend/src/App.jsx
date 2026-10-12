@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import ProductForm from "./components/ProductFrom";
-
+import TableProduct from "./components/TableProduct";
 export default function App() {
   // [1] State: data yang digunakan untuk menampilkan halaman
   const [products, setProducts] = useState([]);
@@ -57,41 +57,13 @@ export default function App() {
   return (
     <main>
       <h1>StockFlow</h1>
-      
-      {/* [3] hubungkan formulir ke fungsi pembaruan daftar */}
+
       <ProductForm onCreated={handleProductCreated} />
 
       <h2>Daftar Produk</h2>
 
-      {products.length === 0 ? (
-        <p>Belum ada produk.</p>
-      ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>Kode Produk</th>
-              <th>Nama</th>
-              <th>Harga</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {products.map((product) => (
-              <tr key={product.id}>
-                <td>{product.sku}</td>
-                <td>{product.name}</td>
-                <td>
-                  {product.price.toLocaleString("id-ID", {
-                    style: "currency",
-                    currency: "IDR",
-                    maximumFractionDigits: 0,
-                  })}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+      {/* [9] Kirim state products ke komponen tabel */}
+      <TableProduct products={products} />
     </main>
   );
 }
