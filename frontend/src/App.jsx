@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import ProductForm from "./components/ProductFrom";
 
 export default function App() {
   // [1] State: data yang digunakan untuk menampilkan halaman
@@ -43,6 +44,11 @@ export default function App() {
     return () => controller.abort();
   }, []);
 
+  // [1] Tambahkan produk baru ke daftar tampilan
+  function handleProductCreated(product) {
+    setProducts((previosProducts) => [...previosProducts, product]);
+  }
+
   // [7] Tampilkan kondisi menunggu atau gagal
   if (loading) return <p>Memuat produk...</p>;
   if (error) return <p role="alert">{error}</p>;
@@ -51,6 +57,10 @@ export default function App() {
   return (
     <main>
       <h1>StockFlow</h1>
+      
+      {/* [3] hubungkan formulir ke fungsi pembaruan daftar */}
+      <ProductForm onCreated={handleProductCreated} />
+
       <h2>Daftar Produk</h2>
 
       {products.length === 0 ? (
