@@ -1,19 +1,23 @@
 import { useEffect, useState } from "react";
 import ProductForm from "./components/ProductFrom";
 import TableProduct from "./components/TableProduct";
+
 export default function App() {
-  // [1] State: data yang digunakan untuk menampilkan halaman
+  // [1] Data produk dan status pengambilan data
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // [2] Ambil produk saat komponen tampil
+  // [2] Status penghapusan produk
+  const [deletingId, setDeletingId] = useState(null);
+  const [deleteError, setDeleteError] = useState("");
+
+  // [3] Ambil produk ketika komponen tampil
   useEffect(() => {
     const controller = new AbortController();
 
     async function loadProducts() {
       try {
-        // [3] Kirim GET melalui proxy Vite
         const response = await fetch("/api/v1/products", {
           signal: controller.signal,
         });
@@ -23,11 +27,8 @@ export default function App() {
         }
 
         const result = await response.json();
-
-        // [4] Simpan produk; React memperbarui tampilan
         setProducts(result.data);
       } catch (err) {
-        // [5] Abaikan request yang dibatalkan saat komponen dilepas
         if (err.name !== "AbortError") {
           setError(err.message);
         }
@@ -40,24 +41,72 @@ export default function App() {
 
     loadProducts();
 
-    // [6] Batalkan request ketika komponen dilepas
     return () => controller.abort();
   }, []);
 
-  // [1] Tambahkan produk baru ke daftar tampilan
+  // [4] Tambahkan produk baru ke tampilan
   function handleProductCreated(product) {
-    setProducts((previosProducts) => [...previosProducts, product]);
+    setProducts((previousProducts) => [...previousProducts, product]);
   }
 
-  // [7] Tampilkan kondisi menunggu atau gagal
-  if (loading) return <p>Memuat produk...</p>;
-  if (error) return <p role="alert">{error}</p>;
+  // [5] Hapus produk setelah dikonfirmasi
+  async function handleDeleteProduct(product) {
+    if (deletingId !== null) return;
 
-  // [8] Tampilkan data dari database
-// [8] Layout halaman dengan Tailwind
-return (
+    const confirmed = window.confirm(
+      `Hapus produk "${product.name}"?`
+    );
+
+    if (!confirmed) return;
+
+    setDeletingId(product.id);
+    setDeleteError("");
+
+    try {
+      const response = await fetch(
+        `/api/v1/products/${product.id}`,
+        { method: "DELETE" }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          response.status === 404
+            ? "Produk sudah tidak ditemukan. Refresh halaman."
+            : "Gagal menghapus produk"
+        );
+      }
+
+      // Respons berhasil tidak punya body; langsung perbarui state
+      setProducts((previousProducts) =>
+        previousProducts.filter((item) => item.id !== product.id)
+      );
+    } catch (err) {
+      setDeleteError(err.message);
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
+  // [6] Tampilan saat memuat atau gagal mengambil data
+  if (loading) {
+    return (
+      <p className="px-4 py-10 text-center text-slate-600">
+        Memuat produk...
+      </p>
+    );
+  }
+
+  if (error) {
+    return (
+      <p role="alert" className="px-4 py-10 text-center text-red-600">
+        {error}
+      </p>
+    );
+  }
+
+  // [7] Halaman produk
+  return (
     <main className="mx-auto max-w-5xl space-y-8 px-4 py-10">
-      {/* [9] Judul halaman */}
       <header>
         <h1 className="text-3xl font-bold text-slate-900">
           StockFlow
@@ -67,19 +116,32 @@ return (
         </p>
       </header>
 
-      {/* [10] Panel formulir */}
+      {/* [8] Formulir tambah produk */}
       <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
         <ProductForm onCreated={handleProductCreated} />
       </section>
 
-      {/* [11] Panel daftar produk */}
+      {/* [9] Daftar produk dan pesan penghapusan */}
       <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="mb-4 text-xl font-semibold">
           Daftar Produk
         </h2>
 
+        {deleteError && (
+          <p
+            role="alert"
+            className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700"
+          >
+            {deleteError}
+          </p>
+        )}
+
         <div className="overflow-x-auto">
-          <TableProduct products={products} />
+          <TableProduct
+            products={products}
+            onDelete={handleDeleteProduct}
+            deletingId={deletingId}
+          />
         </div>
       </section>
     </main>
