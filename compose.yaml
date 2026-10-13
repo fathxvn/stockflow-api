@@ -12,7 +12,7 @@ services:
 
     # [4] Hubungkan port lokal 5432 ke port container 5432
     ports:
-      - "127.0.0.1:5433:5432"
+      - "127.0.0.1:15432:5432"
 
     # [5] Simpan data dalam volume agar bertahan saat container dibuat ulang
     volumes:
