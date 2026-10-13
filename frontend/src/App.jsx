@@ -87,6 +87,18 @@ export default function App() {
     }
   }
 
+  // [1] Form edit 
+  function handleProductUpdate(updateProduct) {
+    setProducts((previousProducts) =>
+    previousProducts.map((product) => 
+      product.id === updateProduct.id ?
+      updateProduct : product
+      )
+    );
+
+    setEditingProduct(null);
+  }
+
   // [6] Tampilan saat memuat atau gagal mengambil data
   if (loading) {
     return (
